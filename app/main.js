@@ -1,5 +1,5 @@
 // main.js
-// Main proccess of Block Keeper app 
+// Main proccess of Block Keeper app
 // Block Keeper
 // Created by Dallas McNeil
 'use strict';
@@ -67,7 +67,7 @@ if (process.platform === 'darwin') {
             {role:'about'},
             {type:'separator'},
             {label:"Preferences...", accelerator:"CmdOrCtrl+,", click() {win.webContents.send('shortcut', 'CommandOrControl+,')}},
-            {type:'separator'}, 
+            {type:'separator'},
             {role:'hide'},
             {role:'hideothers'},
             {role:'unhide'},
@@ -78,7 +78,7 @@ if (process.platform === 'darwin') {
 
     template[3].submenu = [
         {label:'Close', accelerator:'CmdOrCtrl+W', role:'close'},
-        {label:'Minimize', accelerator:'CmdOrCtrl+M', role:'minimize'}, 
+        {label:'Minimize', accelerator:'CmdOrCtrl+M', role:'minimize'},
         {role:'togglefullscreen'},
         {type:'separator'},
         {label:'Bring All to Front', role:'front'},
@@ -133,7 +133,7 @@ const deleteButton = new TouchBarButton({
 const touchBar = new TouchBar([
     new TouchBarGroup({items:[OKButton,
         plus2Button,
-        DNFButton]}),  
+        DNFButton]}),
         new TouchBarSpacer({size: 'flexible'}),
         scramblePreviousButton,
         scrambleNextButton,
@@ -145,19 +145,23 @@ const touchBar = new TouchBar([
 
 const menu = Menu.buildFromTemplate(template);
 
+app
+  .commandLine
+  .appendSwitch('enable-web-bluetooth', true);
+
 app.on('ready', function() {
     var titleBar = "default";
     if (os.type() === "Darwin") {
         var titleBar = "hidden";
     }
-    
+
     global.appDetails = {version:require('../package.json').version, titleBar:titleBar};
 
     let mainWindowState = windowStateKeeper({
         defaultWidth:960,
         defaultHeight:640
     });
-    
+
     win = new BrowserWindow({
         height:mainWindowState.height,
         width:mainWindowState.width,
@@ -175,7 +179,7 @@ app.on('ready', function() {
         protocol:'file:',
         slashes:true
     }));
-        
+
     win.once('ready-to-show', function() {
         win.show();
         win.focus();
@@ -187,23 +191,23 @@ app.on('ready', function() {
             win.webContents.send('update', "update");
         });
     });
-    
+
     mainWindowState.manage(win);
 
     Menu.setApplicationMenu(menu);
-    
+
     win.on('enter-full-screen', (e, cmd) => {
         win.webContents.send('fullscreen', "enter");
-    })   
-    
+    })
+
     win.on('leave-full-screen', (e, cmd) => {
         win.webContents.send('fullscreen', "leave");
     })
-    
+
     win.on('leave-full-screen', (e, cmd) => {
         win.webContents.send('fullscreen', "leave");
     })
-    
+
     win.on('close', (e, cmd) => {
         win.webContents.send('quit', "quit");
     })

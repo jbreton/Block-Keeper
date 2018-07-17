@@ -3,8 +3,8 @@
 // Block Keeper
 // Created by Dallas McNeil
 
-const storage = require('electron-json-storage'); 
-var remote = require('electron').remote; 
+const storage = require('electron-json-storage');
+var remote = require('electron').remote;
 const {remote:{dialog}} = require('electron');
 var fs = require('fs');
 const {clipboard} = require('electron');
@@ -31,6 +31,7 @@ var preferences = {
     recordSolve:false,
     endSplit:false,
     stackmat:false,
+    giiker:false,
     leftKey:"z",
     rightKey:"/",
     OHSplit:false,
@@ -77,7 +78,7 @@ var prefs = function() {
             timer.s3voice(new Audio("sounds/" + preferences.voice + "12s.mp3"));
         }
     }
-    
+
     function setFormsFromPreferences() {
         if (!isNaN(parseInt(preferences.theme)) || preferences.theme == "custom") {
             preferencesInterface.theme.value = preferences.theme;
@@ -93,6 +94,7 @@ var prefs = function() {
         preferencesTimer.voice.value = preferences.voice;
         preferencesGeneral.formatTime.checked = preferences.formatTime;
         preferencesTimer.stackmat.checked = preferences.stackmat;
+        preferencesTimer.giiker.checked = preferences.giiker;
         preferencesTimer.leftKey.value = preferences.leftKey;
         preferencesTimer.rightKey.value = preferences.rightKey;
         preferencesInterface.scrambleSize.value = preferences.scrambleSize + "";
@@ -123,7 +125,7 @@ var prefs = function() {
             $("#timer")[0].innerHTML = (0).toFixed(preferences.timerDetail);
             writeTheme(preferences.customTheme);
             $("#centreBackground").css("background-image", 'url("' + preferences.backgroundImage + '")')
-            $("#scramble").css("text-align", preferences.scrambleAlign); 
+            $("#scramble").css("text-align", preferences.scrambleAlign);
 
             if (preferences.stackmat) {
                 stackmat.init();
@@ -157,14 +159,14 @@ var prefs = function() {
             of:"#background"
         },
         width:"520",
-        height:"520" 
+        height:"520"
     }).on('keydown',function(evt) {
         if (evt.keyCode === $.ui.keyCode.ESCAPE) {
             closePreferences();
         } else if (evt.keyCode === 13) {
             savePreferencesForm();
             evt.preventDefault();
-        }        
+        }
         evt.stopPropagation();
     });
 
@@ -172,7 +174,7 @@ var prefs = function() {
     function openPreferences() {
         if ($('#dialogPreferences').dialog('isOpen')) {
             closePreferences();
-        } else { 
+        } else {
             $("#dialogPreferences").dialog("open")
             disableAllElements("preferencesButton");
             globals.menuOpen = true;
@@ -192,12 +194,12 @@ var prefs = function() {
         }
 
         timer.clearTimer();
-        
+
         $("#dialogPreferences").dialog("close");
-        
+
         record.setupRecorder();
         setStylesheet();
-        
+
         enableAllElements();
         globals.menuOpen = false;
     }
@@ -207,13 +209,14 @@ var prefs = function() {
         preferences.theme = preferencesInterface.theme.value;
         preferences.inspection = preferencesTimer.inspection.checked;
         preferences.split = preferencesTimer.splitMode.checked;
-        preferences.endSplit = preferencesTimer.endSplit.checked;  
+        preferences.endSplit = preferencesTimer.endSplit.checked;
         preferences.timerDetail = preferencesGeneral.timerDetail.value;
         preferences.hideTiming = preferencesTimer.hideTiming.checked;
         preferences.voice = preferencesTimer.voice.value;
         preferences.formatTime = preferencesGeneral.formatTime.checked;
         preferences.recordSolve = preferencesGeneral.recordSolve.checked;
-        preferences.stackmat = preferencesTimer.stackmat.checked; 
+        preferences.stackmat = preferencesTimer.stackmat.checked;
+        preferences.giiker = preferencesTimer.giiker.checked;
         preferences.scrambleSize = preferencesInterface.scrambleSize.value;
         preferences.backgroundImage = preferencesInterface.backgroundImage.value;
         preferences.timerDelay = preferencesTimer.timerDelay.value;
@@ -229,7 +232,7 @@ var prefs = function() {
         preferences.timeSplits = preferencesTimer.timeSplits.checked;
         preferences.timerSecondSize = preferencesInterface.timerSecondSize.value;
         preferences.timerSize = preferencesInterface.timerSize.value;
-    
+
         if (preferencesTimer.leftKey.value != "") {
             preferences.leftKey = preferencesTimer.leftKey.value;
         }
@@ -238,7 +241,7 @@ var prefs = function() {
         }
 
         preferences.customTheme = readTheme();
-        writeTheme(preferences.customTheme); 
+        writeTheme(preferences.customTheme);
 
         savePreferences();
         events.updateRecords();
@@ -329,7 +332,7 @@ var prefs = function() {
                     alert("An error ocurred creating the file: " + err.message);
                 }
             });
-        }); 
+        });
     }
 
     var CSData = []
@@ -349,7 +352,7 @@ var prefs = function() {
                     alert("An error ocurred reading the file:" + err.message);
                     return;
                 }
-                    
+
                 var first = JSON.parse(data);
                 for (var property in first) {
                     if (first.hasOwnProperty(property) && property != "properties") {
@@ -381,7 +384,7 @@ var prefs = function() {
             of:"#background"
         },
         width:"380",
-        height:"353" 
+        height:"353"
     })
 
     var currentCS = 0;
@@ -426,7 +429,7 @@ var prefs = function() {
             globals.menuOpen = false;
             $("#dialogCSTimer").dialog("close");
             enableAllElements();
-        } 
+        }
     }
 
     function cancelCSTime() {
@@ -434,7 +437,7 @@ var prefs = function() {
         $("#dialogCSTimer").dialog("close");
         enableAllElements();
     }
-    
+
     // Exports all session data as CSV data
     function exportCSV() {
         closePreferences();
@@ -443,7 +446,7 @@ var prefs = function() {
         },function (fileName) {
             if (fileName === undefined){
                 return;
-            }  
+            }
             var str = "Event,Session,SessionOrder,Order,Time,Result,Scramble,Split,Date,FormattedDate,Comment"
             var e = events.getAllEvents();
             for (var p = 0; p < e.length; p++) {
@@ -454,7 +457,7 @@ var prefs = function() {
                     if (e[p].sessions[s].records.length === 0) {
                         continue;
                     }
-                    
+
                     for (var r = 0; r < e[p].sessions[s].records.length; r++) {
                         var d = 0;
                         if (e[p].sessions[s].records[r].date != undefined) {
@@ -472,14 +475,14 @@ var prefs = function() {
                         }
                         str += "\n\"" + e[p].name.replaceAll('"','""') + "\",\"" + e[p].sessions[s].name.replaceAll('"','""') + "\"," + (s + 1) + "," + (r + 1) + "," + e[p].sessions[s].records[r].time + "," + e[p].sessions[s].records[r].result + ",\"" + e[p].sessions[s].records[r].scramble.replaceAll('"','""') + "\"," + sp + "," + d + ",\"" + new Date(d).toUTCString() + "\",\"" + com + "\"";
                     }
-                }   
-            }     
+                }
+            }
             fs.writeFile(fileName, str, function (err) {
                 if (err) {
                     alert("An error ocurred creating the file: " + err.message);
                 }
             });
-        }); 
+        });
     }
 
     // Open dialog to select image for background image
@@ -491,7 +494,7 @@ var prefs = function() {
                 return;
             } else {
                 preferencesInterface.backgroundImage.value = fileNames[0].replace(new RegExp("\\\\", "g"), "/");
-            } 
+            }
         })
     }
 
@@ -505,12 +508,74 @@ var prefs = function() {
                 return;
             } else {
                 preferencesGeneral.autosaveLocation.value = fileNames[0].replace(new RegExp("\\\\", "g"), "/");
-            } 
+            }
         })
     }
 
+    function readSlice(rawState, from, to) {
+        var slice = [];
+        for(var i = from; i < to; i++) {
+          slice.push(rawState.getUint8(i) >> 4);
+          slice.push(rawState.getUint8(i) & 0x0F);
+        }
+        return slice;
+    }
+
+    function readEdgeBitFlags(rawState) {
+        var flags = rawState.getUint8(14).toString(2).padStart(8, 0);
+        flags += (rawState.getUint8(15) >> 4).toString(2).padStart(4, 0);
+        return flags.split('');
+    }
+
+    function toggleGiiker() {
+        var serviceUUID = "0000aadb-0000-1000-8000-00805f9b34fb";
+        var stateUUID = "0000aadc-0000-1000-8000-00805f9b34fb";
+
+       console.log('Searching for device');
+       var device = navigator.bluetooth.requestDevice({
+        filters: [{
+          namePrefix: "GiC"
+        }],
+        optionalServices: [
+          serviceUUID,
+          stateUUID
+        ]
+      }).then(device => {
+          console.log('> Found ' + device.name);
+          return device.gatt.connect();
+      })
+      .then(server => {
+          console.log('Connected');
+          return server.getPrimaryService(serviceUUID);
+      })
+      .then(service => {
+          return service.getCharacteristic(stateUUID);
+      })
+      .then(characteristic => {
+          console.log(characteristic.readValue());
+          characteristic.startNotifications();
+          characteristic.addEventListener(
+            'characteristicvaluechanged',
+            function(event) {
+                var rawState = event.target.value;
+                var cornerPositions = readSlice(rawState, 0, 4);
+                var cornerOrientations = readSlice(rawState, 4, 8);
+                var edgePositions = readSlice(rawState, 8, 14);
+                var edgeBitFlags = readEdgeBitFlags(rawState);
+
+                console.log('> new state');
+                console.log(cornerPositions);
+                console.log(cornerOrientations);
+                console.log(edgePositions);
+                console.log(edgeBitFlags);
+            }
+          );
+      })
+
+    }
+
     loadPreferences();
-    
+
     return {
         openPreferences:openPreferences,
         closePreferences:closePreferences,
@@ -525,6 +590,7 @@ var prefs = function() {
         cancelCSTime:cancelCSTime,
         importBK:importBK,
         exportBK:exportBK,
-        exportCSV:exportCSV
+        exportCSV:exportCSV,
+        toggleGiiker:toggleGiiker
     }
 }()
